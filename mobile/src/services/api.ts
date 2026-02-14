@@ -1,8 +1,16 @@
 /**
  * API client for the Touch Grass backend.
  *
- * Replace BASE_URL with your actual server address when deploying.
+ * DEMO_MODE = true  -> Runs everything locally on the phone (no server needed)
+ * DEMO_MODE = false -> Connects to the real backend server
  */
+
+import { demoApi } from "./demo";
+
+// ============================================================
+// Flip this to false when you have the real backend running
+export const DEMO_MODE = true;
+// ============================================================
 
 const BASE_URL = "http://localhost:8000";
 
@@ -42,8 +50,8 @@ async function request<T>(
   return response.json();
 }
 
-// Auth
-export const api = {
+// Real API (talks to the FastAPI backend)
+const realApi = {
   register(username: string, email: string, password: string) {
     return request("/users/register", {
       method: "POST",
@@ -71,14 +79,12 @@ export const api = {
     return request(`/users/leaderboard?limit=${limit}`);
   },
 
-  // Locations
   getNearbyLocations(latitude: number, longitude: number, radiusMeters = 5000) {
     return request(
       `/locations/nearby?latitude=${latitude}&longitude=${longitude}&radius_meters=${radiusMeters}`
     );
   },
 
-  // Check-ins
   checkIn(locationId: number, latitude: number, longitude: number) {
     return request("/checkins/", {
       method: "POST",
@@ -94,7 +100,6 @@ export const api = {
     return request(`/checkins/history?limit=${limit}`);
   },
 
-  // Achievements
   getAchievements() {
     return request("/achievements/");
   },
@@ -103,3 +108,6 @@ export const api = {
     return request("/achievements/mine");
   },
 };
+
+// Export whichever API is active
+export const api = DEMO_MODE ? demoApi : realApi;

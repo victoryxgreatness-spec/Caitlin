@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { api, setAuthToken, clearAuthToken } from "../services/api";
+import { api, setAuthToken, clearAuthToken, DEMO_MODE } from "../services/api";
 import { loadToken, saveToken, deleteToken } from "../services/storage";
 import type { User } from "../types";
 
@@ -26,13 +26,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function restoreSession() {
     try {
       const token = await loadToken();
-      if (token) {
+      if (token && !DEMO_MODE) {
         setAuthToken(token);
         const profile = (await api.getProfile()) as User;
         setUser(profile);
       }
+      // In demo mode, always start fresh at the login screen
     } catch {
-      // Token expired or invalid — clear it
       await deleteToken();
       clearAuthToken();
     } finally {
@@ -41,17 +41,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function login(username: string, password: string) {
-    const response = await api.login(username, password);
-    setAuthToken(response.access_token);
-    await saveToken(response.access_token);
-    const profile = (await api.getProfile()) as User;
-    setUser(profile);
+    if (DEMO_MODE) {
+      // Demo: create a local user instantly, no server needed
+      await api.register(username, `${username}@touchgrass.app`, password);
+      const profile = (await api.getProfile()) as User;
+      await saveToken("demo-token");
+      setUser(profile);
+    } else {
+      const response = await api.login(username, password);
+      const token = (response as any).access_token;
+      setAuthToken(token);
+      await saveToken(token);
+      const profile = (await api.getProfile()) as User;
+      setUser(profile);
+    }
   }
 
   async function register(username: string, email: string, password: string) {
-    await api.register(username, email, password);
-    // Auto-login after registration
-    await login(username, password);
+    if (DEMO_MODE) {
+      // Demo: same as login — just create and go
+      await api.register(username, email, password);
+      const profile = (await api.getProfile()) as User;
+      await saveToken("demo-token");
+      setUser(profile);
+    } else {
+      await api.register(username, email, password);
+      await login(username, password);
+    }
   }
 
   async function logout() {

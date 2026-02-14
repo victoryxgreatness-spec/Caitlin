@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { useAuth } from "../services/auth";
+import { DEMO_MODE } from "../services/api";
 
 export function LoginScreen({ onSwitchToSignUp }: { onSwitchToSignUp: () => void }) {
   const { login } = useAuth();
@@ -77,6 +78,12 @@ export function LoginScreen({ onSwitchToSignUp }: { onSwitchToSignUp: () => void
             Don't have an account? <Text style={styles.switchBold}>Sign up</Text>
           </Text>
         </TouchableOpacity>
+
+        {DEMO_MODE && (
+          <Text style={styles.demoHint}>
+            Demo mode — pick any username and password to jump in
+          </Text>
+        )}
       </View>
     </KeyboardAvoidingView>
   );
@@ -123,4 +130,11 @@ const styles = StyleSheet.create({
   switchLink: { marginTop: 24, alignItems: "center" },
   switchText: { fontSize: 14, color: "#888" },
   switchBold: { color: "#4CAF50", fontWeight: "bold" },
+  demoHint: {
+    fontSize: 13,
+    color: "#aaa",
+    textAlign: "center",
+    marginTop: 16,
+    fontStyle: "italic",
+  },
 });
