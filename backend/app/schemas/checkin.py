@@ -18,6 +18,7 @@ class CheckInResponse(BaseModel):
     points_awarded: int
     checked_in_at: datetime
     new_achievements: list[str] = []  # names of any achievements unlocked
+    next_checkin_available: str = ""  # human-readable cooldown (e.g. "1 year", "24 hours")
 
     model_config = {"from_attributes": True}
 

@@ -12,6 +12,10 @@ export function setAuthToken(token: string) {
   authToken = token;
 }
 
+export function clearAuthToken() {
+  authToken = null;
+}
+
 async function request<T>(
   path: string,
   options: RequestInit = {}

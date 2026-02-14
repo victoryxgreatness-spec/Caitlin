@@ -1,5 +1,10 @@
+import { useState } from "react";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "../services/auth";
+import { LoginScreen } from "../screens/LoginScreen";
+import { SignUpScreen } from "../screens/SignUpScreen";
 import { MapScreen } from "../screens/MapScreen";
 import { ProfileScreen } from "../screens/ProfileScreen";
 import { LeaderboardScreen } from "../screens/LeaderboardScreen";
@@ -7,7 +12,16 @@ import { AchievementsScreen } from "../screens/AchievementsScreen";
 
 const Tab = createBottomTabNavigator();
 
-export function AppNavigator() {
+function AuthScreens() {
+  const [showLogin, setShowLogin] = useState(true);
+
+  if (showLogin) {
+    return <LoginScreen onSwitchToSignUp={() => setShowLogin(false)} />;
+  }
+  return <SignUpScreen onSwitchToLogin={() => setShowLogin(true)} />;
+}
+
+function MainTabs() {
   return (
     <Tab.Navigator
       screenOptions={{
@@ -57,3 +71,26 @@ export function AppNavigator() {
     </Tab.Navigator>
   );
 }
+
+export function AppNavigator() {
+  const { isLoggedIn, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <View style={styles.loading}>
+        <ActivityIndicator size="large" color="#4CAF50" />
+      </View>
+    );
+  }
+
+  return isLoggedIn ? <MainTabs /> : <AuthScreens />;
+}
+
+const styles = StyleSheet.create({
+  loading: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f9f9f9",
+  },
+});

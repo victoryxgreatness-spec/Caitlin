@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.config import format_cooldown_message, get_cooldown_seconds
 from app.database import get_db
 from app.models.user import User
 from app.routers.users import get_current_user
@@ -47,14 +48,18 @@ def check_in(
     # 3. Check if any new achievements were unlocked
     new_achievements = check_achievements(db=db, user=current_user)
 
+    location = proximity["location"]
+    cooldown = get_cooldown_seconds(location.category)
+
     return CheckInResponse(
         id=checkin.id,
         location_id=checkin.location_id,
-        location_name=proximity["location"].name,
+        location_name=location.name,
         distance_meters=checkin.distance_meters,
         points_awarded=checkin.points_awarded,
         checked_in_at=checkin.checked_in_at,
         new_achievements=[a.name for a in new_achievements],
+        next_checkin_available=format_cooldown_message(cooldown),
     )
 
 

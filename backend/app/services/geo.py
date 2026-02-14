@@ -61,10 +61,12 @@ def validate_checkin_proximity(
             "distance_meters": distance,
         }
 
-    # 3. Has the user checked in here recently? (cooldown)
-    cooldown_cutoff = datetime.now(timezone.utc) - timedelta(
-        seconds=settings.min_seconds_between_checkins
-    )
+    # 3. Has the user checked in here recently? (category-based cooldown)
+    from app.config import format_cooldown_message, get_cooldown_seconds
+
+    cooldown_seconds = get_cooldown_seconds(location.category)
+    cooldown_cutoff = datetime.now(timezone.utc) - timedelta(seconds=cooldown_seconds)
+
     recent_checkin = (
         db.query(CheckIn)
         .filter(
@@ -76,11 +78,17 @@ def validate_checkin_proximity(
     )
 
     if recent_checkin:
+        elapsed = (
+            datetime.now(timezone.utc) - recent_checkin.checked_in_at
+        ).total_seconds()
+        remaining = int(cooldown_seconds - elapsed)
+        time_left = format_cooldown_message(remaining)
+
         return {
             "is_valid": False,
             "reason": (
-                f"You already checked in at {location.name} recently. "
-                f"Come back in {settings.min_seconds_between_checkins // 60} minutes."
+                f"You already checked in at {location.name}. "
+                f"Come back in {time_left}!"
             ),
         }
 

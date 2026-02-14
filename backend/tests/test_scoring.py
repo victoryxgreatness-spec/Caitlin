@@ -1,7 +1,58 @@
-"""Tests for the scoring service.
+"""Tests for the scoring service and cooldown system.
 
-These test the point calculation logic without needing a database.
+These test the point calculation logic and cooldown formatting
+without needing a database.
 """
+
+from app.config import (
+    CATEGORY_COOLDOWNS,
+    format_cooldown_message,
+    get_cooldown_seconds,
+)
+
+
+def test_nature_cooldown_is_one_year():
+    """Nature locations (Yellowstone, Grand Canyon) should have 1-year cooldown."""
+    cooldown = get_cooldown_seconds("nature")
+    assert cooldown == 365 * 24 * 3600
+
+
+def test_park_cooldown_is_one_day():
+    """City parks should have 24-hour cooldown to encourage daily visits."""
+    cooldown = get_cooldown_seconds("park")
+    assert cooldown == 24 * 3600
+
+
+def test_monument_cooldown_is_90_days():
+    """Monuments should have 90-day cooldown."""
+    cooldown = get_cooldown_seconds("monument")
+    assert cooldown == 90 * 24 * 3600
+
+
+def test_unknown_category_uses_default():
+    """Unknown categories should fall back to 24 hours."""
+    cooldown = get_cooldown_seconds("some_new_category")
+    assert cooldown == 24 * 3600
+
+
+def test_format_cooldown_year():
+    """A year's worth of seconds should format as '1 year'."""
+    assert format_cooldown_message(365 * 24 * 3600) == "1 year"
+
+
+def test_format_cooldown_days():
+    """90 days should format as '90 days'."""
+    assert format_cooldown_message(90 * 24 * 3600) == "90 days"
+
+
+def test_format_cooldown_hours():
+    """4 hours should format as '4 hours'."""
+    assert format_cooldown_message(4 * 3600) == "4 hours"
+
+
+def test_format_cooldown_minutes():
+    """30 minutes should format as '30 minutes'."""
+    assert format_cooldown_message(30 * 60) == "30 minutes"
 
 
 def test_proximity_bonus_close():

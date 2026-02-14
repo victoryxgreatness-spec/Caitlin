@@ -3,46 +3,41 @@ import {
   FlatList,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
+import { useAuth } from "../services/auth";
 import { api } from "../services/api";
-import type { CheckInHistory, User } from "../types";
+import type { CheckInHistory } from "../types";
 
 export function ProfileScreen() {
-  const [user, setUser] = useState<User | null>(null);
+  const { user, logout } = useAuth();
   const [history, setHistory] = useState<CheckInHistory[]>([]);
 
   useEffect(() => {
-    loadProfile();
+    loadHistory();
   }, []);
 
-  async function loadProfile() {
+  async function loadHistory() {
     try {
-      const [profile, checkins] = await Promise.all([
-        api.getProfile() as Promise<User>,
-        api.getCheckInHistory() as Promise<CheckInHistory[]>,
-      ]);
-      setUser(profile);
+      const checkins = (await api.getCheckInHistory()) as CheckInHistory[];
       setHistory(checkins);
     } catch {
-      // User not logged in — show login prompt in a future iteration
+      // Will show empty state
     }
   }
 
   if (!user) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.emoji}>🌱</Text>
-        <Text style={styles.title}>Welcome to Touch Grass</Text>
-        <Text style={styles.subtitle}>Sign in to track your adventures</Text>
-      </View>
-    );
+    return null; // Auth gate in navigator prevents this, but just in case
   }
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.username}>{user.username}</Text>
+        <View>
+          <Text style={styles.username}>{user.username}</Text>
+          <Text style={styles.email}>{user.email}</Text>
+        </View>
         <View style={styles.pointsBadge}>
           <Text style={styles.pointsValue}>{user.total_points}</Text>
           <Text style={styles.pointsLabel}>points</Text>
@@ -70,16 +65,16 @@ export function ProfileScreen() {
           </Text>
         }
       />
+
+      <TouchableOpacity style={styles.logoutButton} onPress={logout}>
+        <Text style={styles.logoutText}>Log Out</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f9f9f9" },
-  center: { flex: 1, justifyContent: "center", alignItems: "center", padding: 40 },
-  emoji: { fontSize: 64, marginBottom: 16 },
-  title: { fontSize: 24, fontWeight: "bold", color: "#333" },
-  subtitle: { fontSize: 16, color: "#888", marginTop: 8 },
   header: {
     backgroundColor: "#4CAF50",
     padding: 24,
@@ -88,6 +83,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   username: { fontSize: 24, fontWeight: "bold", color: "#fff" },
+  email: { fontSize: 14, color: "#E8F5E9", marginTop: 2 },
   pointsBadge: { alignItems: "center" },
   pointsValue: { fontSize: 28, fontWeight: "bold", color: "#fff" },
   pointsLabel: { fontSize: 12, color: "#E8F5E9" },
@@ -112,4 +108,13 @@ const styles = StyleSheet.create({
   historyDate: { fontSize: 12, color: "#888", marginTop: 2 },
   historyPoints: { fontSize: 18, fontWeight: "bold", color: "#4CAF50" },
   empty: { textAlign: "center", color: "#888", padding: 32 },
+  logoutButton: {
+    margin: 16,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    alignItems: "center",
+  },
+  logoutText: { fontSize: 16, color: "#888" },
 });
