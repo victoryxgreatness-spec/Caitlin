@@ -1,15 +1,15 @@
 {
-  "name": "caitlin-budget",
+  "name": "lifecycle-tracker",
   "version": "0.1.0",
-  "description": "A personal budgeting application",
+  "description": "A depreciation and lifecycle tracker for physical items",
   "main": "src/index.js",
   "bin": {
-    "budget": "./src/index.js"
+    "lifecycle": "./src/index.js"
   },
   "scripts": {
     "start": "node src/index.js",
     "test": "node --test test/**/*.test.js"
   },
-  "keywords": ["budget", "finance", "cli"],
+  "keywords": ["lifecycle", "depreciation", "tracker", "physical-items", "cli"],
   "license": "MIT"
 }
