@@ -1,0 +1,12 @@
+{
+  "name": "touch-grass",
+  "version": "0.1.0",
+  "description": "An outdoor check-in app — get outside, log your adventures",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test test/**/*.test.js"
+  },
+  "keywords": ["outdoors", "check-in", "activity", "nature"],
+  "license": "MIT"
+}
